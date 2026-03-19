@@ -1,0 +1,127 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.organism-task-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-lg;
+  min-height: 500px;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+  
+  &__column {
+    @include flex-column;
+    background: rgba($bg-card, 0.5);
+    border-radius: $radius-lg;
+    border: 1px solid $border-color;
+    overflow: hidden;
+  }
+  
+  &__header {
+    padding: $spacing-md;
+    background: $bg-card;
+    border-bottom: 1px solid $border-color;
+  }
+  
+  &__header-content {
+    @include flex-between;
+  }
+  
+  &__count {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $text-secondary;
+    background: $bg-primary;
+    padding: 2px 8px;
+    border-radius: $radius-full;
+  }
+  
+  &__cards {
+    flex: 1;
+    padding: $spacing-md;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    overflow-y: auto;
+    max-height: 400px;
+    @include scrollbar-custom;
+  }
+  
+  &__empty {
+    @include flex-center;
+    height: 100px;
+    color: $text-muted;
+    font-size: 0.875rem;
+    border: 2px dashed $border-color;
+    border-radius: $radius-md;
+  }
+  
+  &__card {
+    padding: $spacing-md;
+    background: $bg-secondary;
+    border-radius: $radius-md;
+    border: 1px solid $border-color;
+    cursor: pointer;
+    transition: all $transition-normal;
+    animation: slide-up 0.3s ease-out;
+    
+    &:hover {
+      transform: translateY(-2px);
+      border-color: rgba($accent-primary, 0.4);
+      box-shadow: $shadow-md;
+    }
+  }
+  
+  &__card-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $text-primary;
+    margin-bottom: $spacing-xs;
+    @include truncate(2);
+  }
+  
+  &__card-description {
+    font-size: 0.75rem;
+    color: $text-muted;
+    @include truncate(2);
+  }
+  
+  &__skeleton-header {
+    height: 56px;
+    background: linear-gradient(
+      90deg,
+      $bg-card 25%,
+      $bg-hover 50%,
+      $bg-card 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+  
+  &__skeleton-cards {
+    flex: 1;
+    padding: $spacing-md;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+  
+  &__skeleton-card {
+    height: 80px;
+    background: linear-gradient(
+      90deg,
+      $bg-secondary 25%,
+      $bg-hover 50%,
+      $bg-secondary 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    border-radius: $radius-md;
+  }
+}

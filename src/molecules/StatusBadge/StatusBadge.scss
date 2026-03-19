@@ -1,0 +1,78 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.molecule-status-badge {
+  @include flex-center;
+  gap: $spacing-xs;
+  font-weight: 500;
+  border-radius: $radius-full;
+  transition: all $transition-normal;
+  
+  &--pendiente {
+    background: rgba($warning, 0.15);
+    color: $warning;
+    border: 1px solid rgba($warning, 0.3);
+  }
+  
+  &--haciendo {
+    background: rgba($accent-secondary, 0.15);
+    color: $accent-secondary;
+    border: 1px solid rgba($accent-secondary, 0.3);
+  }
+  
+  &--hecho {
+    background: rgba($success, 0.15);
+    color: $success;
+    border: 1px solid rgba($success, 0.3);
+  }
+  
+  &--sm {
+    padding: 2px 8px;
+    font-size: 0.625rem;
+    
+    .molecule-status-badge__icon {
+      font-size: 0.625rem;
+    }
+  }
+  
+  &--md {
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    
+    .molecule-status-badge__icon {
+      font-size: 0.75rem;
+    }
+  }
+  
+  &--lg {
+    padding: 6px 16px;
+    font-size: 0.875rem;
+    
+    .molecule-status-badge__icon {
+      font-size: 0.875rem;
+    }
+  }
+  
+  &__icon {
+    @include flex-center;
+    
+    &--animated {
+      &.molecule-status-badge--pendiente & {
+        animation: pulse 2s ease-in-out infinite;
+      }
+      
+      &.molecule-status-badge--haciendo & {
+        animation: spin 2s linear infinite;
+      }
+      
+      &.molecule-status-badge--hecho & {
+        animation: bounce 0.5s ease-out;
+      }
+    }
+  }
+  
+  &__label {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}

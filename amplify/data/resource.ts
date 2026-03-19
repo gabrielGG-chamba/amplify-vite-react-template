@@ -1,12 +1,19 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
+a.enum(["PENDIENTE", "HACIENDO", "HECHO"]);
+
 const schema = a.schema({
-  Todo: a
+  Task: a
     .model({
-      content: a.string(),
+      title: a.string().required(),
+      description: a.string(),
+      status: a.enum(["PENDIENTE", "HACIENDO", "HECHO"]),
+      versions: a.json(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
     })
     .authorization((allow) => [
-      allow.owner(), // solo el dueño puede acceder
+      allow.owner(),
     ]),
 });
 

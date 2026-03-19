@@ -1,0 +1,116 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.atom-button {
+  @include flex-center;
+  gap: $spacing-sm;
+  font-weight: 500;
+  border-radius: $radius-md;
+  transition: all $transition-normal;
+  position: relative;
+  overflow: hidden;
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  &--primary {
+    background: linear-gradient(135deg, $accent-primary, $accent-secondary);
+    color: $text-primary;
+    border: none;
+    box-shadow: $shadow-sm, 0 0 0 0 rgba($accent-primary, 0);
+    
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: $shadow-lg, 0 0 20px rgba($accent-primary, 0.4);
+    }
+    
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+  }
+  
+  &--secondary {
+    background: $bg-card;
+    color: $text-primary;
+    border: 1px solid $border-color;
+    
+    &:hover:not(:disabled) {
+      background: $bg-hover;
+      border-color: $accent-primary;
+      box-shadow: $shadow-md;
+    }
+  }
+  
+  &--ghost {
+    background: transparent;
+    color: $text-secondary;
+    border: none;
+    
+    &:hover:not(:disabled) {
+      background: rgba($bg-card, 0.5);
+      color: $text-primary;
+    }
+  }
+  
+  &--danger {
+    background: linear-gradient(135deg, $error, darken($error, 10%));
+    color: $text-primary;
+    border: none;
+    
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: $shadow-lg, 0 0 20px rgba($error, 0.4);
+    }
+  }
+  
+  &--sm {
+    padding: $spacing-xs $spacing-sm;
+    font-size: 0.75rem;
+  }
+  
+  &--md {
+    padding: $spacing-sm $spacing-md;
+    font-size: 0.875rem;
+  }
+  
+  &--lg {
+    padding: $spacing-md $spacing-lg;
+    font-size: 1rem;
+  }
+  
+  &--loading {
+    pointer-events: none;
+  }
+  
+  &__loader {
+    @include flex-center;
+  }
+  
+  &__spinner {
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    
+    circle {
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-dasharray: 60;
+      stroke-dashoffset: 45;
+    }
+  }
+  
+  &__icon {
+    @include flex-center;
+    
+    svg {
+      width: 1em;
+      height: 1em;
+    }
+  }
+  
+  &__text {
+    white-space: nowrap;
+  }
+}

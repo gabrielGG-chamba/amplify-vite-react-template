@@ -1,0 +1,87 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.molecule-task-form {
+  width: 100%;
+  max-width: 500px;
+  animation: scale-in 0.3s ease-out;
+  
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    @include flex-center;
+    z-index: 1000;
+    animation: fade-in 0.2s ease-out;
+  }
+  
+  &__form {
+    @include flex-column;
+    gap: $spacing-lg;
+    width: 100%;
+  }
+  
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    @include text-gradient;
+    text-align: center;
+    margin-bottom: $spacing-sm;
+  }
+  
+  &__textarea-wrapper {
+    @include flex-column;
+    gap: $spacing-xs;
+  }
+  
+  &__label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $text-secondary;
+  }
+  
+  &__textarea {
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    background: $bg-input;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    color: $text-primary;
+    font-size: 0.875rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+    transition: all $transition-normal;
+    
+    &::placeholder {
+      color: $text-muted;
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: $accent-primary;
+      box-shadow: 0 0 0 3px rgba($accent-primary, 0.2);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+  
+  &__error {
+    font-size: 0.75rem;
+    color: $error;
+  }
+  
+  &__actions {
+    @include flex-between;
+    gap: $spacing-md;
+    margin-top: $spacing-sm;
+    
+    > * {
+      flex: 1;
+    }
+  }
+}

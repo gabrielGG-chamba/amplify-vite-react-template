@@ -1,60 +1,29 @@
-import { useEffect, useState } from "react";
-import { generateClient } from "aws-amplify/data";
-import { useAuthenticator } from "@aws-amplify/ui-react";
-import type { Schema } from "../amplify/data/resource";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Authenticator } from "@aws-amplify/ui-react";
+import { Amplify } from "aws-amplify";
+import outputs from "../amplify_outputs.json";
+import { Dashboard } from "./pages/Dashboard/Dashboard";
+import "@aws-amplify/ui-react/styles.css";
+import "./index.scss";
 
-const client = generateClient<Schema>();
+Amplify.configure(outputs);
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      retry: 2,
+    },
+  },
+});
 
 function App() {
-  const { user, signOut } = useAuthenticator();
-
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
-
-  useEffect(() => {
-    const subscription = client.models.Todo.observeQuery().subscribe({
-      next: (data) => {
-        setTodos([...data.items]);
-      },
-    });
-
-    return () => subscription.unsubscribe(); // 🔥 cleanup importante
-  }, []);
-
-  function createTodo() {
-    const content = prompt("Todo content");
-
-    if (!content) return;
-
-    client.models.Todo.create({ content });
-  }
-
-  function deleteTodo(id: string) {
-    client.models.Todo.delete({ id });
-  }
-
   return (
-    <main>
-      <h1>My todos</h1>
-
-      <button onClick={createTodo}>+ new</button>
-
-      <ul>
-        {todos.map((todo) => (
-          <li key={todo.id} onClick={() => deleteTodo(todo.id)}>
-            {todo.content}
-          </li>
-        ))}
-      </ul>
-
-      <div>
-        🥳 App successfully hosted. Try creating a new todo.
-      </div>
-
-      <hr />
-
-      <h2>{user?.signInDetails?.loginId}'s todos</h2>
-      <button onClick={signOut}>Sign out</button>
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <Authenticator>
+        <Dashboard />
+      </Authenticator>
+    </QueryClientProvider>
   );
 }
 

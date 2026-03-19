@@ -1,0 +1,162 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.organism-version-history {
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: $bg-secondary;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-xl;
+  animation: scale-in 0.3s ease-out;
+  @include scrollbar-custom;
+  
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    @include flex-center;
+    z-index: 1000;
+    animation: fade-in 0.2s ease-out;
+  }
+  
+  &__header {
+    @include flex-between;
+    padding: $spacing-lg;
+    border-bottom: 1px solid $border-color;
+    position: sticky;
+    top: 0;
+    background: $bg-secondary;
+    z-index: 1;
+  }
+  
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    @include text-gradient;
+  }
+  
+  &__close {
+    @include flex-center;
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-full;
+    background: transparent;
+    color: $text-secondary;
+    font-size: 1rem;
+    transition: all $transition-fast;
+    
+    &:hover {
+      background: rgba($error, 0.1);
+      color: $error;
+    }
+  }
+  
+  &__task-info {
+    @include flex-between;
+    padding: $spacing-md $spacing-lg;
+    background: $bg-card;
+  }
+  
+  &__task-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: $text-primary;
+  }
+  
+  &__timeline {
+    padding: $spacing-lg;
+    position: relative;
+    
+    &::before {
+      content: "";
+      position: absolute;
+      left: 32px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, $accent-primary, $accent-secondary);
+    }
+  }
+  
+  &__item {
+    position: relative;
+    padding-left: 56px;
+    padding-bottom: $spacing-lg;
+    
+    &:last-child {
+      padding-bottom: 0;
+    }
+    
+    &--latest {
+      .organism-version-history__dot {
+        background: $accent-primary;
+        box-shadow: 0 0 0 4px rgba($accent-primary, 0.2);
+        animation: glow-pulse 2s ease-in-out infinite;
+      }
+    }
+    
+    &--past {
+      opacity: 0.7;
+      
+      .organism-version-history__dot {
+        background: $border-light;
+      }
+    }
+  }
+  
+  &__dot {
+    position: absolute;
+    left: 24px;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: $radius-full;
+    border: 2px solid $bg-secondary;
+    z-index: 1;
+  }
+  
+  &__content {
+    @include flex-column;
+    gap: $spacing-xs;
+  }
+  
+  &__status {
+    @include flex-center;
+    gap: $spacing-sm;
+    flex-wrap: wrap;
+  }
+  
+  &__current-status {
+    @include flex-center;
+    gap: $spacing-sm;
+  }
+  
+  &__arrow {
+    color: $text-muted;
+    font-size: 0.875rem;
+  }
+  
+  &__date {
+    font-size: 0.75rem;
+    color: $text-muted;
+  }
+  
+  &__user {
+    font-size: 0.75rem;
+    color: $text-secondary;
+  }
+  
+  &__footer {
+    padding: $spacing-md $spacing-lg;
+    border-top: 1px solid $border-color;
+    text-align: center;
+  }
+  
+  &__count {
+    font-size: 0.875rem;
+    color: $text-muted;
+  }
+}
