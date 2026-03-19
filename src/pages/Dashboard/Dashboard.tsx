@@ -2,45 +2,20 @@ import React, { useMemo } from "react";
 import { MainLayout } from "../../templates/MainLayout/MainLayout";
 import { TaskBoard } from "../../organisms/TaskBoard/TaskBoard";
 import { TaskForm } from "../../molecules/TaskForm/TaskForm";
-import { VersionHistory } from "../../organisms/VersionHistory/VersionHistory";
-import { useTasks } from "../../hooks/useTasks";
 import { useTaskStore } from "../../store/taskStore";
-import type { TaskStatus } from "../../@types/task.types";
+import { useTasks } from "../../hooks/useTasks";
 import "./Dashboard.scss";
 
 export const Dashboard: React.FC = () => {
-  const { tasks, isLoading } = useTasks();
-  const { isFormOpen, openForm, isHistoryOpen, selectedTaskId, closeHistory, searchQuery, setSearchQuery, filter, setStatusFilter } = useTaskStore();
-  
-  const filteredTasks = useMemo(() => {
-    let result = tasks;
-    
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (task) =>
-          task.title.toLowerCase().includes(query) ||
-          task.description?.toLowerCase().includes(query)
-      );
-    }
-    
-    if (filter.status) {
-      result = result.filter((task) => task.status === filter.status);
-    }
-    
-    return result;
-  }, [tasks, searchQuery, filter.status]);
-  
-  const selectedTask = useMemo(() => {
-    return tasks.find((task) => task.id === selectedTaskId);
-  }, [tasks, selectedTaskId]);
+  const { tasks } = useTasks();
+  const { isFormOpen, openForm, searchQuery, setSearchQuery, filter, setStatusFilter } = useTaskStore();
   
   const stats = useMemo(() => {
-    const statuses: TaskStatus[] = ["PENDIENTE", "HACIENDO", "HECHO"];
-    return statuses.map((status) => ({
-      status,
-      count: tasks.filter((task) => task.status === status).length,
-    }));
+    return {
+      pendiente: tasks.filter((t) => !t.content?.startsWith("[HACIENDO]") && !t.content?.startsWith("[HECHO]")).length,
+      haciendo: tasks.filter((t) => t.content?.startsWith("[HACIENDO]")).length,
+      hecho: tasks.filter((t) => t.content?.startsWith("[HECHO]")).length,
+    };
   }, [tasks]);
   
   return (
@@ -52,32 +27,39 @@ export const Dashboard: React.FC = () => {
       <div className="page-dashboard">
         <div className="page-dashboard__header">
           <div className="page-dashboard__stats">
-            {stats.map((stat) => (
-              <button
-                key={stat.status}
-                className={`page-dashboard__stat ${filter.status === stat.status ? "page-dashboard__stat--active" : ""}`}
-                onClick={() => setStatusFilter(filter.status === stat.status ? undefined : stat.status)}
-              >
-                <span className={`page-dashboard__stat-indicator page-dashboard__stat-indicator--${stat.status.toLowerCase()}`} />
-                <span className="page-dashboard__stat-label">
-                  {stat.status === "PENDIENTE" && "Pendientes"}
-                  {stat.status === "HACIENDO" && "En Progreso"}
-                  {stat.status === "HECHO" && "Completadas"}
-                </span>
-                <span className="page-dashboard__stat-count">{stat.count}</span>
-              </button>
-            ))}
+            <button
+              className={`page-dashboard__stat ${filter.status === "PENDIENTE" ? "page-dashboard__stat--active" : ""}`}
+              onClick={() => setStatusFilter(filter.status === "PENDIENTE" ? undefined : "PENDIENTE")}
+            >
+              <span className="page-dashboard__stat-indicator page-dashboard__stat-indicator--pendiente" />
+              <span className="page-dashboard__stat-label">Pendientes</span>
+              <span className="page-dashboard__stat-count">{stats.pendiente}</span>
+            </button>
+            
+            <button
+              className={`page-dashboard__stat ${filter.status === "HACIENDO" ? "page-dashboard__stat--active" : ""}`}
+              onClick={() => setStatusFilter(filter.status === "HACIENDO" ? undefined : "HACIENDO")}
+            >
+              <span className="page-dashboard__stat-indicator page-dashboard__stat-indicator--haciendo" />
+              <span className="page-dashboard__stat-label">En Progreso</span>
+              <span className="page-dashboard__stat-count">{stats.haciendo}</span>
+            </button>
+            
+            <button
+              className={`page-dashboard__stat ${filter.status === "HECHO" ? "page-dashboard__stat--active" : ""}`}
+              onClick={() => setStatusFilter(filter.status === "HECHO" ? undefined : "HECHO")}
+            >
+              <span className="page-dashboard__stat-indicator page-dashboard__stat-indicator--hecho" />
+              <span className="page-dashboard__stat-label">Completadas</span>
+              <span className="page-dashboard__stat-count">{stats.hecho}</span>
+            </button>
           </div>
         </div>
         
-        <TaskBoard tasks={filteredTasks} isLoading={isLoading} />
+        <TaskBoard />
       </div>
       
       {isFormOpen && <TaskForm />}
-      
-      {isHistoryOpen && selectedTask && (
-        <VersionHistory task={selectedTask} onClose={closeHistory} />
-      )}
     </MainLayout>
   );
 };

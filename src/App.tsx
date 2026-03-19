@@ -5,6 +5,7 @@ import outputs from "../amplify_outputs.json";
 import { Dashboard } from "./pages/Dashboard/Dashboard";
 import "@aws-amplify/ui-react/styles.css";
 import "./index.scss";
+import "./styles/authenticator.scss";
 
 Amplify.configure(outputs);
 

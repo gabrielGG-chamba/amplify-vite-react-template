@@ -1,9 +1,8 @@
 import React from "react";
-import type { TaskStatus } from "../../@types/task.types";
 import "./StatusBadge.scss";
 
 interface StatusBadgeProps {
-  status: TaskStatus;
+  status: "PENDIENTE" | "HACIENDO" | "HECHO";
   showLabel?: boolean;
   size?: "sm" | "md" | "lg";
   animated?: boolean;

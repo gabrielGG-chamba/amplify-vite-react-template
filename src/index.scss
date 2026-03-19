@@ -5,12 +5,9 @@
 @use "atoms/Badge/Badge";
 @use "atoms/Input/Input";
 @use "atoms/Card/Card";
-@use "molecules/TaskCard/TaskCard";
 @use "molecules/StatusBadge/StatusBadge";
 @use "molecules/TaskForm/TaskForm";
-@use "organisms/TaskList/TaskList";
 @use "organisms/TaskBoard/TaskBoard";
-@use "organisms/VersionHistory/VersionHistory";
 @use "templates/MainLayout/MainLayout";
 @use "pages/Dashboard/Dashboard";
 
