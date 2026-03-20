@@ -1,8 +1,3 @@
-type ClassValue = string | number | boolean | undefined | null | ClassValue[];
-
-export const cn = (...classes: ClassValue[]): string => {
-  return classes
-    .flat()
-    .filter((c): c is string | number => typeof c === "string" || typeof c === "number")
-    .join(" ");
+export const cn = (...classes: (string | number | undefined | null | false)[]) => {
+  return classes.filter((c): c is string => typeof c === "string" && c.length > 0).join(" ");
 };

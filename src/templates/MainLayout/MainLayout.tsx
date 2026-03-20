@@ -1,21 +1,16 @@
 import React from "react";
 import { Button } from "../../atoms/Button/Button";
-import { Input } from "../../atoms/Input/Input";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import "./MainLayout.scss";
 
 interface MainLayoutProps {
   children: React.ReactNode;
   onCreateTask?: () => void;
-  searchQuery?: string;
-  onSearchChange?: (query: string) => void;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
   children,
   onCreateTask,
-  searchQuery = "",
-  onSearchChange,
 }) => {
   const { user, signOut } = useAuthenticator();
   
@@ -26,17 +21,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           <div className="template-main-layout__brand">
             <span className="template-main-layout__logo">✓</span>
             <h1 className="template-main-layout__title">TaskFlow</h1>
-          </div>
-          
-          <div className="template-main-layout__search">
-            {onSearchChange && (
-              <Input
-                placeholder="Buscar tareas..."
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                leftIcon={<span>🔍</span>}
-              />
-            )}
           </div>
           
           <div className="template-main-layout__actions">

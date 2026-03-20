@@ -30,46 +30,6 @@
     margin-bottom: $spacing-sm;
   }
   
-  &__textarea-wrapper {
-    @include flex-column;
-    gap: $spacing-xs;
-  }
-  
-  &__label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: $text-secondary;
-  }
-  
-  &__textarea {
-    width: 100%;
-    padding: $spacing-sm $spacing-md;
-    background: $bg-input;
-    border: 1px solid $border-color;
-    border-radius: $radius-md;
-    color: $text-primary;
-    font-size: 0.875rem;
-    font-family: inherit;
-    resize: vertical;
-    min-height: 100px;
-    transition: all $transition-normal;
-    
-    &::placeholder {
-      color: $text-muted;
-    }
-    
-    &:focus {
-      outline: none;
-      border-color: $accent-primary;
-      box-shadow: 0 0 0 3px rgba($accent-primary, 0.2);
-    }
-    
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-  
   &__error {
     font-size: 0.75rem;
     color: $error;

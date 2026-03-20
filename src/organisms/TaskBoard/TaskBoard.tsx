@@ -1,270 +1,241 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useMemo, memo } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "../../../amplify/data/resource";
+import { useTasks, type Todo } from "../../hooks/useTasks";
 import "./TaskBoard.scss";
 
 const client = generateClient<Schema>();
 
-interface Todo {
-  id: string;
-  content: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-  owner?: string | null;
+const STATUS_MAP = {
+  pendiente: "pendiente",
+  haciendo: "haciendo",
+  hecho: "hecho",
+} as const;
+
+const STATUS_PREFIX: Record<string, string> = {
+  pendiente: "[PENDIENTE]",
+  haciendo: "[HACIENDO]",
+  hecho: "[HECHO]",
+};
+
+const getStatus = (content: string | null): keyof typeof STATUS_MAP => {
+  if (content?.startsWith("[HECHO]")) return "hecho";
+  if (content?.startsWith("[HACIENDO]")) return "haciendo";
+  return "pendiente";
+};
+
+const getContent = (content: string | null): string => {
+  return content?.replace(/^\[(PENDIENTE|HACIENDO|HECHO)\]\s*/, "") || "Sin título";
+};
+
+interface TaskCardProps {
+  task: Todo;
+  isEditing: boolean;
+  isDragging: boolean;
+  editValue: string;
+  onDragStart: (e: React.DragEvent, task: Todo) => void;
+  onEdit: (task: Todo) => void;
+  onDelete: (id: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onChange: (value: string) => void;
 }
 
-interface TaskFormState {
+const TaskCard = memo<TaskCardProps>(({
+  task, isEditing, isDragging, editValue,
+  onDragStart, onEdit, onDelete, onSave, onCancel, onChange
+}) => (
+  <div
+    className={`organism-task-board__card ${isDragging ? "organism-task-board__card--dragging" : ""}`}
+    draggable={!isEditing}
+    onDragStart={(e) => onDragStart(e, task)}
+    onClick={() => !isEditing && onEdit(task)}
+  >
+    <div className="organism-task-board__card-handle">⋮⋮</div>
+    <div className="organism-task-board__card-content">
+      {isEditing ? (
+        <div className="organism-task-board__edit-form" onClick={(e) => e.stopPropagation()}>
+          <input
+            type="text"
+            className="organism-task-board__edit-input"
+            value={editValue}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") onSave(); if (e.key === "Escape") onCancel(); }}
+            autoFocus
+          />
+          <div className="organism-task-board__edit-actions">
+            <button className="organism-task-board__btn organism-task-board__btn--save" onClick={(e) => { e.stopPropagation(); onSave(); }}>✓</button>
+            <button className="organism-task-board__btn organism-task-board__btn--cancel" onClick={(e) => { e.stopPropagation(); onCancel(); }}>✕</button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <h4 className="organism-task-board__card-title">{getContent(task.content)}</h4>
+          <div className="organism-task-board__card-actions">
+            <button className="organism-task-board__btn" onClick={(e) => { e.stopPropagation(); onEdit(task); }}>✎</button>
+            <button className="organism-task-board__btn --delete" onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}>🗑</button>
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+));
+
+interface ColumnProps {
+  status: keyof typeof STATUS_MAP;
+  tasks: Todo[];
+  draggedTask: Todo | null;
   editingId: string | null;
   editValue: string;
+  isDragOver: boolean;
+  onDragOver: (e: React.DragEvent) => void;
+  onDragLeave: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent) => void;
+  onDragStart: (e: React.DragEvent, task: Todo) => void;
+  onEdit: (task: Todo) => void;
+  onDelete: (id: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onChange: (value: string) => void;
 }
 
+const Column = memo<ColumnProps>(({
+  status, tasks, draggedTask, editingId, editValue, isDragOver,
+  onDragOver, onDragLeave, onDrop, onDragStart, onEdit, onDelete, onSave, onCancel, onChange
+}) => (
+  <div
+    className={`organism-task-board__column ${isDragOver ? "organism-task-board__column--drag-over" : ""}`}
+    onDragOver={onDragOver}
+    onDragLeave={onDragLeave}
+    onDrop={onDrop}
+  >
+    <div className="organism-task-board__header">
+      <div className="organism-task-board__header-content">
+        <span className={`organism-task-board__badge --${status}`}>
+          {status === "pendiente" ? "○" : status === "haciendo" ? "◐" : "✓"}
+        </span>
+        <span className="organism-task-board__badge-label">
+          {status === "pendiente" ? "Pendiente" : status === "haciendo" ? "En Progreso" : "Completado"}
+        </span>
+        <span className="organism-task-board__count">{tasks.length}</span>
+      </div>
+    </div>
+    <div className="organism-task-board__cards">
+      {tasks.length === 0 ? (
+        <div className="organism-task-board__empty">
+          <span>Arrastra aquí</span>
+          <span>{status === "pendiente" ? "las tareas pendientes" : status === "haciendo" ? "las tareas en progreso" : "las tareas completadas"}</span>
+        </div>
+      ) : (
+        tasks.map((task) => (
+          <TaskCard
+            key={task.id}
+            task={task}
+            isEditing={editingId === task.id}
+            isDragging={draggedTask?.id === task.id}
+            editValue={editValue}
+            onDragStart={onDragStart}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onSave={onSave}
+            onCancel={onCancel}
+            onChange={onChange}
+          />
+        ))
+      )}
+    </div>
+  </div>
+));
+
 export const TaskBoard: React.FC = () => {
-  const [tasks, setTasks] = useState<Todo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { tasks, isLoading } = useTasks();
   const [draggedTask, setDraggedTask] = useState<Todo | null>(null);
-  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
-  const [formState, setFormState] = useState<TaskFormState>({ editingId: null, editValue: "" });
-  const subscriptionRef = useRef<any>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<keyof typeof STATUS_MAP | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const observable = client.models.Todo.observeQuery({
-          authMode: "userPool",
-        });
-        
-        subscriptionRef.current = observable.subscribe({
-          next: (data: any) => {
-            const mappedTasks: Todo[] = data.items.map((item: any): Todo => ({
-              id: item.id,
-              content: item.content ?? null,
-              createdAt: item.createdAt ?? new Date().toISOString(),
-              updatedAt: item.updatedAt ?? new Date().toISOString(),
-              owner: item.owner,
-            }));
-            
-            const uniqueTasks = mappedTasks.reduce((acc: Todo[], todo) => {
-              const existing = acc.find(t => t.id === todo.id);
-              if (!existing) {
-                acc.push(todo);
-              }
-              return acc;
-            }, []);
-            
-            setTasks(uniqueTasks);
-            setIsLoading(false);
-          },
-          error: (err: Error) => {
-            console.error("Error fetching tasks:", err);
-            setIsLoading(false);
-          },
-        });
-      } catch (err) {
-        console.error("Error setting up subscription:", err);
-        setIsLoading(false);
-      }
-    };
+  const columns = useMemo(() => ({
+    pendiente: tasks.filter((t) => getStatus(t.content) === "pendiente"),
+    haciendo: tasks.filter((t) => getStatus(t.content) === "haciendo"),
+    hecho: tasks.filter((t) => getStatus(t.content) === "hecho"),
+  }), [tasks]);
 
-    fetchTasks();
-
-    return () => {
-      if (subscriptionRef.current) {
-        subscriptionRef.current.unsubscribe();
-      }
-    };
-  }, []);
-
-  const getTaskStatus = (content: string | null): "pendiente" | "haciendo" | "hecho" => {
-    if (content?.startsWith("[HECHO]")) return "hecho";
-    if (content?.startsWith("[HACIENDO]")) return "haciendo";
-    return "pendiente";
-  };
-
-  const getDisplayContent = (content: string | null): string => {
-    if (!content) return "Sin título";
-    return content.replace(/^\[(PENDIENTE|HACIENDO|HECHO)\]\s*/, "");
-  };
-
-  const handleDragStart = (e: React.DragEvent, task: Todo) => {
-    if (formState.editingId) return;
+  const handleDragStart = useCallback((e: React.DragEvent, task: Todo) => {
+    if (editingId) return;
     setDraggedTask(task);
     e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", task.id);
-  };
+    navigator.vibrate?.(50);
+  }, [editingId]);
 
-  const handleDragEnd = () => {
-    setDraggedTask(null);
-    setDragOverColumn(null);
-  };
-
-  const handleDragOver = (e: React.DragEvent, column: string) => {
-    if (formState.editingId) return;
+  const handleDragOver = useCallback((e: React.DragEvent, column: keyof typeof STATUS_MAP) => {
+    if (editingId) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     setDragOverColumn(column);
-  };
+  }, [editingId]);
 
-  const handleDragLeave = () => {
-    setDragOverColumn(null);
-  };
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
+      setDragOverColumn(null);
+    }
+  }, []);
 
-  const handleDrop = useCallback(async (e: React.DragEvent, targetStatus: "pendiente" | "haciendo" | "hecho") => {
+  const handleDrop = useCallback(async (e: React.DragEvent, targetStatus: keyof typeof STATUS_MAP) => {
     e.preventDefault();
+    e.stopPropagation();
     setDragOverColumn(null);
-    
-    if (!draggedTask) return;
-    
-    const currentStatus = getTaskStatus(draggedTask.content);
-    if (currentStatus === targetStatus) return;
-    
-    const statusPrefix: Record<string, string> = {
-      pendiente: "[PENDIENTE]",
-      haciendo: "[HACIENDO]",
-      hecho: "[HECHO]",
-    };
-    
-    const newContent = `${statusPrefix[targetStatus]} ${getDisplayContent(draggedTask.content)}`;
-    
+    if (!draggedTask || getStatus(draggedTask.content) === targetStatus) return;
+
+    const content = getContent(draggedTask.content);
     try {
-      await client.models.Todo.update({
-        id: draggedTask.id,
-        content: newContent,
-        updatedAt: new Date().toISOString(),
-      } as any, {
-        authMode: "userPool",
-      });
+      await client.models.Todo.update({ id: draggedTask.id, content: `${STATUS_PREFIX[targetStatus]} ${content}` } as any, { authMode: "userPool" });
+      navigator.vibrate?.([30, 50, 30]);
     } catch (err) {
       console.error("Error updating task:", err);
     }
   }, [draggedTask]);
 
-  const handleEdit = (task: Todo) => {
-    setFormState({ editingId: task.id, editValue: getDisplayContent(task.content) });
-  };
+  const handleEdit = useCallback((task: Todo) => {
+    setEditingId(task.id);
+    setEditValue(getContent(task.content));
+  }, []);
 
-  const handleSaveEdit = async () => {
-    if (!formState.editingId || !formState.editValue.trim()) {
-      setFormState({ editingId: null, editValue: "" });
+  const handleSave = useCallback(async () => {
+    if (!editingId || !editValue.trim()) {
+      setEditingId(null);
+      setEditValue("");
       return;
     }
-
-    const task = tasks.find(t => t.id === formState.editingId);
+    const task = tasks.find((t) => t.id === editingId);
     if (!task) return;
-
-    const statusPrefix: Record<string, string> = {
-      pendiente: "[PENDIENTE]",
-      haciendo: "[HACIENDO]",
-      hecho: "[HECHO]",
-    };
-    const status = getTaskStatus(task.content);
-    const newContent = `${statusPrefix[status]} ${formState.editValue.trim()}`;
 
     try {
       await client.models.Todo.update({
-        id: formState.editingId,
-        content: newContent,
-        updatedAt: new Date().toISOString(),
-      } as any, {
-        authMode: "userPool",
-      });
-      setFormState({ editingId: null, editValue: "" });
+        id: editingId,
+        content: `${STATUS_PREFIX[getStatus(task.content)]} ${editValue.trim()}`,
+      } as any, { authMode: "userPool" });
+      setEditingId(null);
+      setEditValue("");
     } catch (err) {
       console.error("Error updating task:", err);
     }
-  };
+  }, [editingId, editValue, tasks]);
 
-  const handleCancelEdit = () => {
-    setFormState({ editingId: null, editValue: "" });
-  };
+  const handleCancel = useCallback(() => {
+    setEditingId(null);
+    setEditValue("");
+  }, []);
 
-  const handleDelete = async (taskId: string) => {
-    if (!confirm("¿Estás seguro de eliminar esta tarea?")) return;
-    
+  const handleDelete = useCallback(async (id: string) => {
+    if (!confirm("¿Eliminar esta tarea?")) return;
     try {
-      await client.models.Todo.delete({ id: taskId } as any, {
-        authMode: "userPool",
-      });
+      await client.models.Todo.delete({ id } as any, { authMode: "userPool" });
     } catch (err) {
       console.error("Error deleting task:", err);
     }
-  };
-
-  const columns = {
-    pendiente: tasks.filter((t) => getTaskStatus(t.content) === "pendiente"),
-    haciendo: tasks.filter((t) => getTaskStatus(t.content) === "haciendo"),
-    hecho: tasks.filter((t) => getTaskStatus(t.content) === "hecho"),
-  };
-
-  const TaskCard = ({ task }: { task: Todo }) => {
-    const isEditing = formState.editingId === task.id;
-    const isDragging = draggedTask?.id === task.id;
-
-    return (
-      <div
-        className={`organism-task-board__card ${isDragging ? "organism-task-board__card--dragging" : ""}`}
-        draggable={!isEditing}
-        onDragStart={(e) => handleDragStart(e, task)}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="organism-task-board__card-handle">⋮⋮</div>
-        
-        <div className="organism-task-board__card-content">
-          {isEditing ? (
-            <div className="organism-task-board__edit-form">
-              <input
-                type="text"
-                className="organism-task-board__edit-input"
-                value={formState.editValue}
-                onChange={(e) => setFormState(prev => ({ ...prev, editValue: e.target.value }))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSaveEdit();
-                  if (e.key === "Escape") handleCancelEdit();
-                }}
-                autoFocus
-              />
-              <div className="organism-task-board__edit-actions">
-                <button 
-                  className="organism-task-board__btn organism-task-board__btn--save"
-                  onClick={handleSaveEdit}
-                  title="Guardar"
-                >
-                  ✓
-                </button>
-                <button 
-                  className="organism-task-board__btn organism-task-board__btn--cancel"
-                  onClick={handleCancelEdit}
-                  title="Cancelar"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <h4 className="organism-task-board__card-title">{getDisplayContent(task.content)}</h4>
-              <div className="organism-task-board__card-actions">
-                <button 
-                  className="organism-task-board__btn"
-                  onClick={() => handleEdit(task)}
-                  title="Editar"
-                >
-                  ✎
-                </button>
-                <button 
-                  className="organism-task-board__btn organism-task-board__btn--delete"
-                  onClick={() => handleDelete(task.id)}
-                  title="Eliminar"
-                >
-                  🗑
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  };
+  }, []);
 
   if (isLoading) {
     return (
@@ -273,9 +244,7 @@ export const TaskBoard: React.FC = () => {
           <div key={i} className="organism-task-board__column">
             <div className="organism-task-board__skeleton-header" />
             <div className="organism-task-board__skeleton-cards">
-              {[1, 2].map((j) => (
-                <div key={j} className="organism-task-board__skeleton-card" />
-              ))}
+              {[1, 2].map((j) => <div key={j} className="organism-task-board__skeleton-card" />)}
             </div>
           </div>
         ))}
@@ -285,71 +254,26 @@ export const TaskBoard: React.FC = () => {
 
   return (
     <div className="organism-task-board">
-      <div
-        className={`organism-task-board__column ${dragOverColumn === "pendiente" ? "organism-task-board__column--drag-over" : ""}`}
-        onDragOver={(e) => handleDragOver(e, "pendiente")}
-        onDragLeave={handleDragLeave}
-        onDrop={(e) => handleDrop(e, "pendiente")}
-      >
-        <div className="organism-task-board__header">
-          <div className="organism-task-board__header-content">
-            <span className="organism-task-board__badge organism-task-board__badge--pendiente">○</span>
-            <span className="organism-task-board__badge-label">Pendiente</span>
-            <span className="organism-task-board__count">{columns.pendiente.length}</span>
-          </div>
-        </div>
-        <div className="organism-task-board__cards">
-          {columns.pendiente.length === 0 ? (
-            <div className="organism-task-board__empty">Arrastra aquí</div>
-          ) : (
-            columns.pendiente.map((task) => <TaskCard key={task.id} task={task} />)
-          )}
-        </div>
-      </div>
-
-      <div
-        className={`organism-task-board__column ${dragOverColumn === "haciendo" ? "organism-task-board__column--drag-over" : ""}`}
-        onDragOver={(e) => handleDragOver(e, "haciendo")}
-        onDragLeave={handleDragLeave}
-        onDrop={(e) => handleDrop(e, "haciendo")}
-      >
-        <div className="organism-task-board__header">
-          <div className="organism-task-board__header-content">
-            <span className="organism-task-board__badge organism-task-board__badge--haciendo">◐</span>
-            <span className="organism-task-board__badge-label">En Progreso</span>
-            <span className="organism-task-board__count">{columns.haciendo.length}</span>
-          </div>
-        </div>
-        <div className="organism-task-board__cards">
-          {columns.haciendo.length === 0 ? (
-            <div className="organism-task-board__empty">Arrastra aquí</div>
-          ) : (
-            columns.haciendo.map((task) => <TaskCard key={task.id} task={task} />)
-          )}
-        </div>
-      </div>
-
-      <div
-        className={`organism-task-board__column ${dragOverColumn === "hecho" ? "organism-task-board__column--drag-over" : ""}`}
-        onDragOver={(e) => handleDragOver(e, "hecho")}
-        onDragLeave={handleDragLeave}
-        onDrop={(e) => handleDrop(e, "hecho")}
-      >
-        <div className="organism-task-board__header">
-          <div className="organism-task-board__header-content">
-            <span className="organism-task-board__badge organism-task-board__badge--hecho">✓</span>
-            <span className="organism-task-board__badge-label">Completado</span>
-            <span className="organism-task-board__count">{columns.hecho.length}</span>
-          </div>
-        </div>
-        <div className="organism-task-board__cards">
-          {columns.hecho.length === 0 ? (
-            <div className="organism-task-board__empty">Arrastra aquí</div>
-          ) : (
-            columns.hecho.map((task) => <TaskCard key={task.id} task={task} />)
-          )}
-        </div>
-      </div>
+      {(["pendiente", "haciendo", "hecho"] as const).map((status) => (
+        <Column
+          key={status}
+          status={status}
+          tasks={columns[status]}
+          draggedTask={draggedTask}
+          editingId={editingId}
+          editValue={editValue}
+          isDragOver={dragOverColumn === status}
+          onDragOver={(e) => handleDragOver(e, status)}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => handleDrop(e, status)}
+          onDragStart={handleDragStart}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          onChange={setEditValue}
+        />
+      ))}
     </div>
   );
 };
