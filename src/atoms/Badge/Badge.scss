@@ -1,0 +1,73 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.atom-badge {
+  @include flex-center;
+  gap: $spacing-xs;
+  font-weight: 500;
+  border-radius: $radius-full;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all $transition-normal;
+  
+  &--pendiente {
+    background: rgba($warning, 0.15);
+    color: $warning;
+    border: 1px solid rgba($warning, 0.3);
+    
+    .atom-badge__icon {
+      animation: pulse 2s ease-in-out infinite;
+    }
+  }
+  
+  &--haciendo {
+    background: rgba($accent-secondary, 0.15);
+    color: $accent-secondary;
+    border: 1px solid rgba($accent-secondary, 0.3);
+    
+    .atom-badge__icon {
+      animation: spin 2s linear infinite;
+    }
+  }
+  
+  &--hecho {
+    background: rgba($success, 0.15);
+    color: $success;
+    border: 1px solid rgba($success, 0.3);
+    
+    .atom-badge__icon {
+      animation: bounce 0.5s ease-out;
+    }
+  }
+  
+  &--sm {
+    padding: 2px 8px;
+    font-size: 0.625rem;
+    
+    .atom-badge__icon {
+      font-size: 0.5rem;
+    }
+  }
+  
+  &--md {
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    
+    .atom-badge__icon {
+      font-size: 0.625rem;
+    }
+  }
+  
+  &--lg {
+    padding: 6px 16px;
+    font-size: 0.875rem;
+    
+    .atom-badge__icon {
+      font-size: 0.75rem;
+    }
+  }
+  
+  &__icon {
+    @include flex-center;
+  }
+}

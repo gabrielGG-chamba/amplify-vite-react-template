@@ -1,0 +1,85 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.atom-input {
+  @include flex-column;
+  gap: $spacing-xs;
+  
+  &__label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $text-secondary;
+  }
+  
+  &__wrapper {
+    position: relative;
+    @include flex-center;
+  }
+  
+  &__field {
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    background: $bg-input;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    color: $text-primary;
+    font-size: 0.875rem;
+    transition: all $transition-normal;
+    
+    &::placeholder {
+      color: $text-muted;
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: $accent-primary;
+      box-shadow: 0 0 0 3px rgba($accent-primary, 0.2);
+    }
+    
+    &--has-left-icon {
+      padding-left: 40px;
+    }
+    
+    &--has-right-icon {
+      padding-right: 40px;
+    }
+    
+    .atom-input--error & {
+      border-color: $error;
+      
+      &:focus {
+        box-shadow: 0 0 0 3px rgba($error, 0.2);
+      }
+    }
+  }
+  
+  &__icon {
+    position: absolute;
+    @include flex-center;
+    color: $text-muted;
+    pointer-events: none;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+    
+    &--left {
+      left: $spacing-sm;
+    }
+    
+    &--right {
+      right: $spacing-sm;
+    }
+  }
+  
+  &__error {
+    font-size: 0.75rem;
+    color: $error;
+  }
+  
+  &__helper {
+    font-size: 0.75rem;
+    color: $text-muted;
+  }
+}
