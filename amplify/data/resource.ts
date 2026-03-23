@@ -4,7 +4,7 @@ const schema = a.schema({
   Todo: a
     .model({
       content: a.string(),
-      status: a.string(),
+      status: a.enum(["HECHO", "HACIENDO", "PENDIENTE"]),
     })
     .authorization((allow) => [
       allow.owner(),
