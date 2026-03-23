@@ -8,25 +8,17 @@ import "./TaskBoard.scss";
 const client = generateClient<Schema>();
 
 const STATUS_MAP = {
-  pendiente: "pendiente",
-  haciendo: "haciendo",
-  hecho: "hecho",
+  pendiente: "PENDIENTE",
+  haciendo: "HACIENDO",
+  hecho: "HECHO",
 } as const;
 
-const STATUS_PREFIX: Record<string, string> = {
-  pendiente: "[PENDIENTE]",
-  haciendo: "[HACIENDO]",
-  hecho: "[HECHO]",
-};
+type StatusKey = keyof typeof STATUS_MAP;
 
-const getStatus = (content: string | null): keyof typeof STATUS_MAP => {
-  if (content?.startsWith("[HECHO]")) return "hecho";
-  if (content?.startsWith("[HACIENDO]")) return "haciendo";
+const getStatusKey = (status: string | null): StatusKey => {
+  if (status === "HECHO") return "hecho";
+  if (status === "HACIENDO") return "haciendo";
   return "pendiente";
-};
-
-const getContent = (content: string | null): string => {
-  return content?.replace(/^\[(PENDIENTE|HACIENDO|HECHO)\]\s*/, "") || "Sin título";
 };
 
 interface TaskCardProps {
@@ -71,7 +63,7 @@ const TaskCard = memo<TaskCardProps>(({
         </div>
       ) : (
         <>
-          <h4 className="organism-task-board__card-title">{getContent(task.content)}</h4>
+          <h4 className="organism-task-board__card-title">{task.content || "Sin título"}</h4>
           <div className="organism-task-board__card-actions">
             <button className="organism-task-board__btn" onClick={(e) => { e.stopPropagation(); onEdit(task); }}>✎</button>
             <button className="organism-task-board__btn --delete" onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}>🗑</button>
@@ -156,9 +148,9 @@ export const TaskBoard: React.FC = () => {
   const [editValue, setEditValue] = useState("");
 
   const columns = useMemo(() => ({
-    pendiente: tasks.filter((t) => getStatus(t.content) === "pendiente"),
-    haciendo: tasks.filter((t) => getStatus(t.content) === "haciendo"),
-    hecho: tasks.filter((t) => getStatus(t.content) === "hecho"),
+    pendiente: tasks.filter((t) => getStatusKey(t.status) === "pendiente"),
+    haciendo: tasks.filter((t) => getStatusKey(t.status) === "haciendo"),
+    hecho: tasks.filter((t) => getStatusKey(t.status) === "hecho"),
   }), [tasks]);
 
   const handleDragStart = useCallback((e: React.DragEvent, task: Todo) => {
@@ -186,11 +178,10 @@ export const TaskBoard: React.FC = () => {
     e.preventDefault();
     e.stopPropagation();
     setDragOverColumn(null);
-    if (!draggedTask || getStatus(draggedTask.content) === targetStatus) return;
+    if (!draggedTask || getStatusKey(draggedTask.status) === targetStatus) return;
 
-    const content = getContent(draggedTask.content);
     try {
-      await client.models.Todo.update({ id: draggedTask.id, content: `${STATUS_PREFIX[targetStatus]} ${content}` } as any, { authMode: "userPool" });
+      await client.models.Todo.update({ id: draggedTask.id, status: STATUS_MAP[targetStatus] } as any, { authMode: "userPool" });
       navigator.vibrate?.([30, 50, 30]);
     } catch (err) {
       console.error("Error updating task:", err);
@@ -199,7 +190,7 @@ export const TaskBoard: React.FC = () => {
 
   const handleEdit = useCallback((task: Todo) => {
     setEditingId(task.id);
-    setEditValue(getContent(task.content));
+    setEditValue(task.content || "");
   }, []);
 
   const handleSave = useCallback(async () => {
@@ -214,7 +205,7 @@ export const TaskBoard: React.FC = () => {
     try {
       await client.models.Todo.update({
         id: editingId,
-        content: `${STATUS_PREFIX[getStatus(task.content)]} ${editValue.trim()}`,
+        content: editValue.trim(),
       } as any, { authMode: "userPool" });
       setEditingId(null);
       setEditValue("");

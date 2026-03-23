@@ -8,6 +8,7 @@ const client = generateClient<Schema>();
 export interface Todo {
   id: string;
   content: string | null;
+  status: string | null;
   createdAt?: string;
   updatedAt?: string;
   owner?: string | null;
@@ -28,6 +29,7 @@ export const useTasks = () => {
         setTasks(items.map((item: any): Todo => ({
           id: item.id,
           content: item.content,
+          status: item.status ?? null,
           createdAt: item.createdAt ?? new Date().toISOString(),
           updatedAt: item.updatedAt ?? new Date().toISOString(),
           owner: item.owner,
@@ -44,10 +46,10 @@ export const useTasks = () => {
     return () => subscriptionRef.current?.unsubscribe();
   }, []);
 
-  const createTask = useCallback(async (content: string) => {
+  const createTask = useCallback(async (content: string, status: string = "PENDIENTE") => {
     setIsCreating(true);
     try {
-      await client.models.Todo.create({ content } as any, { authMode: "userPool" });
+      await client.models.Todo.create({ content, status } as any, { authMode: "userPool" });
     } catch (err) {
       console.error("Error creating task:", err);
       throw err;

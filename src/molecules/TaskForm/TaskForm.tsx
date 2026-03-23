@@ -19,7 +19,7 @@ export const TaskForm: React.FC = () => {
       return;
     }
     try {
-      await createTask(`[PENDIENTE] ${title.trim()}`);
+      await createTask(title.trim(), "PENDIENTE");
       closeForm();
     } catch (err) {
       setError("Error al crear la tarea");
