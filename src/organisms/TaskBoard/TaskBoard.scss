@@ -1,0 +1,310 @@
+$bg-primary: #0f0f1a;
+$bg-secondary: #1a1a2e;
+$bg-card: #16213e;
+$bg-hover: #1e2a4a;
+$bg-input: #0d1321;
+$accent-primary: #7c3aed;
+$accent-secondary: #3b82f6;
+$text-primary: #f8fafc;
+$text-secondary: #94a3b8;
+$text-muted: #64748b;
+$success: #10b981;
+$warning: #f59e0b;
+$error: #ef4444;
+$border-color: #2d3748;
+$border-light: #374151;
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-full: 9999px;
+$transition-fast: 150ms ease;
+$transition-normal: 250ms ease;
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.organism-task-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-lg;
+  min-height: 500px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+
+  &__column {
+    display: flex;
+    flex-direction: column;
+    background: rgba($bg-card, 0.5);
+    border-radius: $radius-lg;
+    border: 2px solid transparent;
+    transition: all $transition-normal;
+    overflow: hidden;
+
+    &--drag-over {
+      border-color: $accent-primary;
+      background: rgba($accent-primary, 0.1);
+    }
+  }
+
+  &__header {
+    padding: $spacing-md;
+    background: $bg-card;
+    border-bottom: 1px solid $border-color;
+  }
+
+  &__header-content {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &__badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: $radius-full;
+    font-size: 0.875rem;
+
+    &--pendiente {
+      background: rgba($warning, 0.15);
+      color: $warning;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    &--haciendo {
+      background: rgba($accent-secondary, 0.15);
+      color: $accent-secondary;
+      animation: spin 2s linear infinite;
+    }
+
+    &--hecho {
+      background: rgba($success, 0.15);
+      color: $success;
+    }
+  }
+
+  &__badge-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $text-secondary;
+    flex: 1;
+  }
+
+  &__count {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $text-primary;
+    background: $bg-primary;
+    padding: 2px 8px;
+    border-radius: $radius-full;
+  }
+
+  &__cards {
+    flex: 1;
+    padding: $spacing-md;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    overflow-y: auto;
+    max-height: 500px;
+    min-height: 200px;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: $border-light;
+      border-radius: $radius-full;
+    }
+  }
+
+  &__card {
+    padding: $spacing-md $spacing-lg;
+    background: $bg-secondary;
+    border-radius: $radius-md;
+    border: 1px solid $border-color;
+    cursor: grab;
+    transition: all $transition-normal;
+    animation: slide-up 0.3s ease-out;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    min-height: 56px;
+
+    &:hover {
+      transform: translateY(-2px);
+      border-color: rgba($accent-primary, 0.4);
+      box-shadow: $shadow-md;
+
+      .organism-task-board__card-actions {
+        opacity: 1;
+      }
+    }
+
+    &--dragging {
+      opacity: 0.5;
+      transform: scale(0.98);
+    }
+  }
+
+  &__card-handle {
+    color: $text-muted;
+    font-size: 0.75rem;
+    letter-spacing: -2px;
+    user-select: none;
+    cursor: grab;
+  }
+
+  &__card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    min-width: 0;
+  }
+
+  &__card-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $text-primary;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+
+  &__card-actions {
+    display: flex;
+    gap: $spacing-xs;
+    opacity: 0;
+    transition: opacity $transition-fast;
+
+    .organism-task-board__card:hover & {
+      opacity: 1;
+    }
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: $radius-sm;
+    background: $bg-card;
+    color: $text-secondary;
+    cursor: pointer;
+    transition: all $transition-fast;
+    font-size: 0.875rem;
+
+    &:hover {
+      background: $accent-primary;
+      color: white;
+      transform: scale(1.1);
+    }
+
+    &--save:hover { background: $success; }
+    &--cancel:hover { background: $error; }
+    &--delete:hover { background: $error; }
+  }
+
+  &__edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    flex: 1;
+  }
+
+  &__edit-input {
+    width: 100%;
+    padding: $spacing-sm;
+    background: $bg-input;
+    border: 1px solid $accent-primary;
+    border-radius: $radius-sm;
+    color: $text-primary;
+    font-size: 0.875rem;
+    outline: none;
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba($accent-primary, 0.3);
+    }
+  }
+
+  &__edit-actions {
+    display: flex;
+    gap: $spacing-xs;
+    justify-content: flex-end;
+  }
+
+  &__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    color: $text-muted;
+    font-size: 0.875rem;
+    border: 2px dashed $border-color;
+    border-radius: $radius-md;
+    transition: all $transition-normal;
+
+    .organism-task-board__column--drag-over & {
+      border-color: $accent-primary;
+      color: $accent-primary;
+      background: rgba($accent-primary, 0.05);
+    }
+  }
+
+  &__skeleton-header {
+    height: 56px;
+    background: linear-gradient(90deg, $bg-card 25%, $bg-hover 50%, $bg-card 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  &__skeleton-cards {
+    flex: 1;
+    padding: $spacing-md;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &__skeleton-card {
+    height: 80px;
+    background: linear-gradient(90deg, $bg-secondary 25%, $bg-hover 50%, $bg-secondary 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    border-radius: $radius-md;
+  }
+}

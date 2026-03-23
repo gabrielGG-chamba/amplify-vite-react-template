@@ -1,0 +1,60 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.atom-card {
+  border-radius: $radius-lg;
+  transition: all $transition-normal;
+  
+  &--default {
+    @include glass-effect;
+  }
+  
+  &--elevated {
+    background: $bg-card;
+    box-shadow: $shadow-lg;
+    
+    &:hover {
+      box-shadow: $shadow-xl;
+    }
+  }
+  
+  &--outlined {
+    background: transparent;
+    border: 1px solid $border-color;
+    
+    &:hover {
+      border-color: rgba($accent-primary, 0.3);
+    }
+  }
+  
+  &--padding-none {
+    padding: 0;
+  }
+  
+  &--padding-sm {
+    padding: $spacing-sm;
+  }
+  
+  &--padding-md {
+    padding: $spacing-md;
+  }
+  
+  &--padding-lg {
+    padding: $spacing-lg;
+  }
+  
+  &--hoverable,
+  &--clickable {
+    cursor: pointer;
+    
+    &:hover {
+      transform: translateY(-4px);
+      border-color: rgba($accent-primary, 0.4);
+      box-shadow: $shadow-lg, 0 0 30px rgba($accent-primary, 0.2);
+    }
+    
+    &:active {
+      transform: translateY(-2px);
+    }
+  }
+}

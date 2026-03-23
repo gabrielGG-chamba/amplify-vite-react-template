@@ -1,0 +1,82 @@
+@use "variables" as *;
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin glass-effect {
+  background: rgba($bg-card, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba($border-color, 0.5);
+}
+
+@mixin card-base {
+  @include glass-effect;
+  border-radius: $radius-lg;
+  transition: all $transition-normal;
+  
+  &:hover {
+    border-color: rgba($accent-primary, 0.3);
+    box-shadow: $shadow-lg, $shadow-glow-purple;
+    transform: translateY(-2px);
+  }
+}
+
+@mixin text-gradient($start: $accent-primary, $end: $accent-secondary) {
+  background: linear-gradient(135deg, $start, $end);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@mixin truncate($lines: 1) {
+  @if $lines == 1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+@mixin scrollbar-custom {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: $bg-secondary;
+    border-radius: $radius-full;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: $border-light;
+    border-radius: $radius-full;
+    
+    &:hover {
+      background: $text-muted;
+    }
+  }
+}
+
+@mixin focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba($accent-primary, 0.4);
+}

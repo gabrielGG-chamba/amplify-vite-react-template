@@ -1,0 +1,90 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.template-main-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    position: sticky;
+    top: 0;
+    background: rgba($bg-secondary, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid $border-color;
+    z-index: 100;
+    padding: $spacing-md $spacing-lg;
+  }
+
+  &__header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    @include flex-between;
+    gap: $spacing-lg;
+  }
+
+  &__brand {
+    @include flex-center;
+    gap: $spacing-sm;
+  }
+
+  &__logo {
+    @include flex-center;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, $accent-primary, $accent-secondary);
+    border-radius: $radius-md;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    @include text-gradient;
+  }
+
+  &__actions {
+    @include flex-center;
+    gap: $spacing-md;
+  }
+
+  &__user {
+    @include flex-center;
+    gap: $spacing-sm;
+  }
+
+  &__user-avatar {
+    @include flex-center;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, $success, $accent-secondary);
+    border-radius: $radius-full;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+  }
+
+  &__main {
+    flex: 1;
+    padding: $spacing-xl $spacing-lg;
+  }
+
+  &__container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  &__footer {
+    padding: $spacing-lg;
+    text-align: center;
+    border-top: 1px solid $border-color;
+    background: $bg-secondary;
+
+    p {
+      font-size: 0.875rem;
+      color: $text-muted;
+    }
+  }
+}
