@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useCallback, useMemo, memo } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "../../../amplify/data/resource";
-import { useTasks, type Todo } from "../../hooks/useTasks";
+import { useTasks, type Task } from "../../hooks/useTasks";
 import "./TaskBoard.scss";
 
 const client = generateClient<Schema>();
@@ -15,19 +14,19 @@ const STATUS_MAP = {
 
 type StatusKey = keyof typeof STATUS_MAP;
 
-const getStatusKey = (status: string | null): StatusKey => {
+const getStatusKey = (status: string | null | undefined): StatusKey => {
   if (status === "HECHO") return "hecho";
   if (status === "HACIENDO") return "haciendo";
   return "pendiente";
 };
 
 interface TaskCardProps {
-  task: Todo;
+  task: Task;
   isEditing: boolean;
   isDragging: boolean;
   editValue: string;
-  onDragStart: (e: React.DragEvent, task: Todo) => void;
-  onEdit: (task: Todo) => void;
+  onDragStart: (e: React.DragEvent, task: Task) => void;
+  onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
   onSave: () => void;
   onCancel: () => void;
@@ -76,16 +75,16 @@ const TaskCard = memo<TaskCardProps>(({
 
 interface ColumnProps {
   status: keyof typeof STATUS_MAP;
-  tasks: Todo[];
-  draggedTask: Todo | null;
+  tasks: Task[];
+  draggedTask: Task | null;
   editingId: string | null;
   editValue: string;
   isDragOver: boolean;
   onDragOver: (e: React.DragEvent) => void;
   onDragLeave: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
-  onDragStart: (e: React.DragEvent, task: Todo) => void;
-  onEdit: (task: Todo) => void;
+  onDragStart: (e: React.DragEvent, task: Task) => void;
+  onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
   onSave: () => void;
   onCancel: () => void;
@@ -142,7 +141,7 @@ const Column = memo<ColumnProps>(({
 
 export const TaskBoard: React.FC = () => {
   const { tasks, isLoading } = useTasks();
-  const [draggedTask, setDraggedTask] = useState<Todo | null>(null);
+  const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<keyof typeof STATUS_MAP | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -153,7 +152,7 @@ export const TaskBoard: React.FC = () => {
     hecho: tasks.filter((t) => getStatusKey(t.status) === "hecho"),
   }), [tasks]);
 
-  const handleDragStart = useCallback((e: React.DragEvent, task: Todo) => {
+  const handleDragStart = useCallback((e: React.DragEvent, task: Task) => {
     if (editingId) return;
     setDraggedTask(task);
     e.dataTransfer.effectAllowed = "move";
@@ -181,14 +180,14 @@ export const TaskBoard: React.FC = () => {
     if (!draggedTask || getStatusKey(draggedTask.status) === targetStatus) return;
 
     try {
-      await client.models.Todo.update({ id: draggedTask.id, status: STATUS_MAP[targetStatus] } as any, { authMode: "userPool" });
+      await client.models.Todo.update({ id: draggedTask.id, status: STATUS_MAP[targetStatus] }, { authMode: "userPool" });
       navigator.vibrate?.([30, 50, 30]);
     } catch (err) {
       console.error("Error updating task:", err);
     }
   }, [draggedTask]);
 
-  const handleEdit = useCallback((task: Todo) => {
+  const handleEdit = useCallback((task: Task) => {
     setEditingId(task.id);
     setEditValue(task.content || "");
   }, []);
@@ -206,7 +205,7 @@ export const TaskBoard: React.FC = () => {
       await client.models.Todo.update({
         id: editingId,
         content: editValue.trim(),
-      } as any, { authMode: "userPool" });
+      }, { authMode: "userPool" });
       setEditingId(null);
       setEditValue("");
     } catch (err) {
@@ -222,7 +221,7 @@ export const TaskBoard: React.FC = () => {
   const handleDelete = useCallback(async (id: string) => {
     if (!confirm("¿Eliminar esta tarea?")) return;
     try {
-      await client.models.Todo.delete({ id } as any, { authMode: "userPool" });
+      await client.models.Todo.delete({ id }, { authMode: "userPool" });
     } catch (err) {
       console.error("Error deleting task:", err);
     }

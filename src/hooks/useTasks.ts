@@ -1,55 +1,51 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "../../amplify/data/resource";
 
 const client = generateClient<Schema>();
 
-export interface Todo {
-  id: string;
-  content: string | null;
-  status: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-  owner?: string | null;
-}
+export type Task = Schema["Todo"]["type"];
+export type CreateTaskInput = Schema["Todo"]["createType"];
+export type UpdateTaskInput = Schema["Todo"]["updateType"];
 
 export const useTasks = () => {
-  const [tasks, setTasks] = useState<Todo[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const subscriptionRef = useRef<any>(null);
+  const subscriptionRef = useRef<ReturnType<ReturnType<typeof client.models.Todo.observeQuery>["subscribe"]> | null>(null);
 
   useEffect(() => {
     const observable = client.models.Todo.observeQuery({ authMode: "userPool" });
     
     subscriptionRef.current = observable.subscribe({
-      next: ({ items }: any) => {
-        setTasks(items.map((item: any): Todo => ({
+      next: ({ items }) => {
+        setTasks(items.map((item): Task => ({
           id: item.id,
           content: item.content,
-          status: item.status ?? null,
-          createdAt: item.createdAt ?? new Date().toISOString(),
-          updatedAt: item.updatedAt ?? new Date().toISOString(),
+          status: item.status,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
           owner: item.owner,
         })));
         setIsLoading(false);
       },
-      error: (err: Error) => {
+      error: (err) => {
         console.error("Error fetching tasks:", err);
         setError(err);
         setIsLoading(false);
       },
     });
 
-    return () => subscriptionRef.current?.unsubscribe();
+    return () => {
+      subscriptionRef.current?.unsubscribe();
+    };
   }, []);
 
-  const createTask = useCallback(async (content: string, status: string = "PENDIENTE") => {
+  const createTask = useCallback(async (input: CreateTaskInput) => {
     setIsCreating(true);
     try {
-      await client.models.Todo.create({ content, status } as any, { authMode: "userPool" });
+      await client.models.Todo.create(input, { authMode: "userPool" });
     } catch (err) {
       console.error("Error creating task:", err);
       throw err;
