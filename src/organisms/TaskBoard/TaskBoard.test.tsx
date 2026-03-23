@@ -76,7 +76,7 @@ describe('TaskBoard (integration)', () => {
     render(<TaskBoard />);
     const editButtons = screen.getAllByText('✎');
     await userEvent.click(editButtons[0]);
-    const editInput = screen.getByDisplayValue('Task One');
+    screen.getByDisplayValue('Task One');
     await userEvent.keyboard('{Escape}');
     expect(screen.queryByDisplayValue('Task One')).not.toBeInTheDocument();
     expect(screen.getByText('Task One')).toBeInTheDocument();

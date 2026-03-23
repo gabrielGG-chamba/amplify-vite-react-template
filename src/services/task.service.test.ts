@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getNextStatus, canTransitionTo, createVersion, isValidStatus } from './task.service';
-import type { TaskStatus } from '../@types/task.types';
 
 describe('getNextStatus', () => {
   it('returns HACIENDO for PENDIENTE', () => {
